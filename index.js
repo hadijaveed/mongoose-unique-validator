@@ -37,8 +37,20 @@ module.exports = function(schema, options) {
             paths.forEach(function(pathName) {
                 // Choose error message
                 var pathMessage = message;
+                var errorObject = null;
                 if (typeof indexOptions.unique === 'string') {
                     pathMessage = indexOptions.unique;
+                }
+
+                // allow unique to be passed as an error object
+                if (typeof indexOptions.unique === 'object') {
+                    if (indexOptions.unique.message) {
+                        pathMessage = indexOptions.unique.message;
+                    }
+                    errorObject = indexOptions.unique;
+                    errorObject.type = type;
+                    errorObject.message = pathMessage;
+                    type = errorObject;
                 }
 
                 // Obtain the correct path object
