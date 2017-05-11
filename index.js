@@ -28,6 +28,17 @@ module.exports = function(schema, options) {
     var type = options.type || 'unique';
     var message = options.message || 'Error, expected `{PATH}` to be unique. Value: `{VALUE}`';
 
+    // Since an Object cannot be passsed in mongoose validate api as second parameter
+    // Third param {type} could be passed as an objecct with error code. Which also map to kind in returned object
+    // If code is passed in default options type will be rendered as an object
+
+    var passType = type;
+
+    if (options.code) {
+        passType = { type: type };
+        passType.code = options.code;
+    }
+
     // Dynamically iterate all indexes
     schema.indexes().forEach(function(index) {
         var indexOptions = index[1];
@@ -37,7 +48,8 @@ module.exports = function(schema, options) {
             paths.forEach(function(pathName) {
                 // Choose error message
                 var pathMessage = message;
-                var errorObject = null;
+                var pathType = passType;
+
                 if (typeof indexOptions.unique === 'string') {
                     pathMessage = indexOptions.unique;
                 }
@@ -47,10 +59,14 @@ module.exports = function(schema, options) {
                     if (indexOptions.unique.message) {
                         pathMessage = indexOptions.unique.message;
                     }
-                    errorObject = indexOptions.unique;
-                    errorObject.type = type;
-                    errorObject.message = pathMessage;
-                    type = errorObject;
+
+                    if (indexOptions.unique.code) {
+                        pathType.code = indexOptions.unique.code;
+                    }
+
+                    if (indexOptions.unique.type) {
+                        pathType.type = indexOptions.unique.type;
+                    }
                 }
 
                 // Obtain the correct path object
@@ -123,7 +139,7 @@ module.exports = function(schema, options) {
                                 resolve(count === 0);
                             });
                         });
-                    }, pathMessage, type);
+                    }, pathMessage, pathType);
                 }
             });
         }
