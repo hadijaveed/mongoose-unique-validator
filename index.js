@@ -25,17 +25,17 @@ var deepPath = function(schema, pathName) {
 // Export the mongoose plugin
 module.exports = function(schema, options) {
     options = options || {};
-    var type = options.type || 'unique';
-    var message = options.message || 'Error, expected `{PATH}` to be unique. Value: `{VALUE}`';
+    var defaultType = options.type || 'unique';
+    var defaultMessage = options.message || 'Error, expected `{PATH}` to be unique. Value: `{VALUE}`';
 
     // Since an Object cannot be passsed in mongoose validate api as second parameter
     // Third param {type} could be passed as an objecct with error code. Which also map to kind in returned object
     // If code is passed in default options type will be rendered as an object
 
-    var passType = type;
+    var passType = defaultType;
 
     if (options.code) {
-        passType = { type: type };
+        passType = { type: defaultType };
         passType.code = options.code;
     }
 
@@ -47,7 +47,7 @@ module.exports = function(schema, options) {
             var paths = Object.keys(index[0]);
             paths.forEach(function(pathName) {
                 // Choose error message
-                var pathMessage = message;
+                var pathMessage = defaultMessage;
                 var pathType = passType;
 
                 if (typeof indexOptions.unique === 'string') {
@@ -56,6 +56,10 @@ module.exports = function(schema, options) {
 
                 // allow unique to be passed as an error object
                 if (typeof indexOptions.unique === 'object') {
+                    if (typeof pathType !== 'object') {
+                        pathType = { type: defaultType };
+                    }
+
                     if (indexOptions.unique.message) {
                         pathMessage = indexOptions.unique.message;
                     }

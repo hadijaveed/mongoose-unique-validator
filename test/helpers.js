@@ -73,6 +73,23 @@ module.exports = {
         });
     },
 
+    createCustomSchemaWithErrorCode: function() {
+        return new mongoose.Schema({
+            username: {
+                type: String,
+                unique: { message: 'Username is already used.', code: 4002 }
+            },
+            email: {
+                type: String,
+                index: true,
+                unique: { message: 'It already exists', code: 4003 }
+            },
+            password: {
+                type: String
+            }
+        });
+    },
+
     createCompoundIndexSchema: function() {
         var schema = new mongoose.Schema({
             username: {

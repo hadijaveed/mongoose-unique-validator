@@ -42,6 +42,26 @@ module.exports = function(mongoose) {
             promise.catch(done);
         });
 
+        it('uses custom error code via options', function(done) {
+            var User = mongoose.model('User', helpers.createUserSchema().plugin(uniqueValidator, {
+                message: 'Path: {PATH}, value: {VALUE}, type: {TYPE}',
+                code: 4012
+            }));
+
+            // Save the first user
+            var promise = new User(helpers.USERS[0]).save();
+            promise.then(function() {
+                // Try saving a duplicate
+                new User(helpers.USERS[0]).save().catch(function(err) {
+                    expect(err.errors.username.kind.code).to.equal(4012);
+                    expect(err.errors.email.kind.code).to.equal(4012);
+
+                    done();
+                });
+            });
+            promise.catch(done);
+        });
+
         it('uses custom message from schema configuration', function(done) {
             var User = mongoose.model('User', helpers.createCustomUserSchema().plugin(uniqueValidator));
 
@@ -52,6 +72,25 @@ module.exports = function(mongoose) {
                 new User(helpers.USERS[0]).save().catch(function(err) {
                     expect(err.errors.username.message).to.equal('Username is already used.');
                     expect(err.errors.email.message).to.equal('It already exists.');
+
+                    done();
+                });
+            });
+            promise.catch(done);
+        });
+
+        it('uses custom error code from schema configuration', function(done) {
+            var User = mongoose.model('User', helpers.createCustomSchemaWithErrorCode().plugin(uniqueValidator));
+
+            // Save the first user
+            var promise = new User(helpers.USERS[0]).save();
+            promise.then(function() {
+                // Try saving a duplicate
+                new User(helpers.USERS[0]).save().catch(function(err) {
+                    expect(err.errors.username.message).to.equal('Username is already used.');
+                    expect(err.errors.username.kind.code).to.equal(4002);
+                    expect(err.errors.email.message).to.equal('It already exists');
+                    expect(err.errors.email.kind.code).to.equal(4003);
 
                     done();
                 });

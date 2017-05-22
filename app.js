@@ -7,12 +7,23 @@ const mongoose = require('mongoose'),
     uniqueValidator = require('./index');
 
 const userSchema = new mongoose.Schema({
-    email: { type: String, index: true, unique: { code: 1111 } },
-    userName: { type: String, index: true },
-    password: { type: String }
+    username: {
+        type: String,
+        unique: true
+    },
+    contacts: [{
+        email: {
+            type: String,
+            index: true,
+            unique: 'should be unique'
+        }
+    }],
+    password: {
+        type: String
+    }
 });
 
-userSchema.plugin(uniqueValidator, { code: 2222, type: 'shit shat' });
+userSchema.plugin(uniqueValidator, { code: 2222 });
 
 const User = mongoose.model('User', userSchema);
 
@@ -27,8 +38,10 @@ mongoose.connection.once('connected', (err) => {
     //     console.log('see result here ', result);
     // });
     User.create({
-        email: 'hadi.pk@gmail.com',
-        userName: 'hadi javeed',
+        email: 'hadi',
+        contacts: [{
+            email: 'hadij.pk@gmail.com'
+        }],
         password: 'molana'
     }, (err, result) => {
         if (err) console.log('see error here ', JSON.stringify(err, null, 2));
